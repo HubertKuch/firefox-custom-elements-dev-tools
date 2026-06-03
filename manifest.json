@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Firefox Custom Elements",
+  "version": "1.0",
+  "description": "Custom elements dev tools for firefox that do not break",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "devtools_page": "devtools.html"
+}
