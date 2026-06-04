@@ -1,4 +1,4 @@
-function findCustomElementsPerf(root = document.body, result = []) {
+export function findCustomElements(root = document.body, result = []) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
   let node = walker.nextNode();
 
@@ -10,7 +10,7 @@ function findCustomElementsPerf(root = document.body, result = []) {
     }
 
     if (node.shadowRoot) {
-      findCustomElementsPerf(node.shadowRoot, result);
+      findCustomElements(node.shadowRoot, result);
     }
 
     node = walker.nextNode();
