@@ -1,5 +1,5 @@
 browser.devtools.panels.create(
-  "Go Components",
+  "Custom Elements",
   "icon.png",
-  "panel.html"
+  "./src/panel/panel.html"
 );
