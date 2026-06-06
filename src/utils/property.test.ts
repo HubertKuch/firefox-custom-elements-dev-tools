@@ -23,15 +23,15 @@ describe('property utils', () => {
   describe('isAttributeThing', () => {
     it('should return true if attribute exists', () => {
       const element = {
-        hasAttribute: (attr) => attr === 'test-attr'
-      };
+        hasAttribute: (attr: string) => attr === 'test-attr'
+      } as Element;
       expect(isAttributeThing(element, 'test-attr')).toBe(true);
     });
 
     it('should return false if attribute does not exist', () => {
       const element = {
-        hasAttribute: (attr) => attr === 'test-attr'
-      };
+        hasAttribute: (attr: string) => attr === 'test-attr'
+      } as Element;
       expect(isAttributeThing(element, 'other-attr')).toBe(false);
     });
   });

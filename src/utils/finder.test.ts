@@ -28,7 +28,7 @@ describe('findCustomElements', () => {
         <div id="host"></div>
       </div>
     `;
-    const host = document.getElementById('host');
+    const host = document.getElementById('host')!;
     const shadowRoot = host.attachShadow({ mode: 'open' });
     shadowRoot.innerHTML = `
       <shadow-custom-el></shadow-custom-el>

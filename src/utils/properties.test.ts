@@ -29,7 +29,7 @@ describe('properties utils', () => {
       class MockHTMLElement {}
       vi.stubGlobal('HTMLElement', MockHTMLElement);
 
-      class Base extends MockHTMLElement {
+      class Base extends (MockHTMLElement as any) {
         get baseProp() { return 1; }
       }
 
@@ -40,7 +40,7 @@ describe('properties utils', () => {
 
       const instance = new Derived();
 
-      const properties = getCustomProperties(instance);
+      const properties = getCustomProperties(instance as any);
 
       expect(properties).toContain('baseProp');
       expect(properties).toContain('derivedProp');
@@ -52,17 +52,14 @@ describe('properties utils', () => {
       class MockHTMLElement {}
       vi.stubGlobal('HTMLElement', MockHTMLElement);
 
-      class Empty extends MockHTMLElement {}
+      class Empty extends (MockHTMLElement as any) {}
       const instance = new Empty();
 
-      const properties = getCustomProperties(instance);
+      const properties = getCustomProperties(instance as any);
       expect(properties).toEqual([]);
     });
 
     it('should stop at HTMLElement prototype', () => {
-      // Create a chain: Instance -> Derived -> HTMLElement -> Object
-      // HTMLElement.prototype properties should NOT be included.
-
       const htmlElementProto = { someNativeProp: 'native' };
       function MockHTMLElement() {}
       MockHTMLElement.prototype = htmlElementProto;
@@ -74,11 +71,11 @@ describe('properties utils', () => {
       const instance = { customValue: 'value' };
       Object.setPrototypeOf(instance, derivedProto);
 
-      const properties = getCustomProperties(instance);
+      const properties = getCustomProperties(instance as any);
 
       expect(properties).toContain('customProp');
       expect(properties).not.toContain('someNativeProp');
-      expect(properties).not.toContain('customValue'); // It only looks at prototypes
+      expect(properties).not.toContain('customValue');
     });
   });
 });

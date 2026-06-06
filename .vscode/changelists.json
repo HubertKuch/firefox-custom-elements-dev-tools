@@ -1,0 +1,43 @@
+{
+  "changelists": [
+    {
+      "name": "Default",
+      "files": [
+        "demo/index.html",
+        "demo/sample.js",
+        ".vscode/changelists.json",
+        ".gitignore",
+        "package-lock.json",
+        "package.json",
+        "src/panel/panel.js",
+        "src/panel/panel.html",
+        "devtools.html",
+        "tsconfig.json",
+        "background.js",
+        "devtools.js",
+        "manifest.json",
+        "public/manifest.json",
+        "vite.config.ts",
+        "src/utils/finder.js",
+        "src/utils/finder.test.js",
+        "src/utils/properties.js",
+        "src/utils/properties.test.js",
+        "src/utils/property.js",
+        "src/utils/property.test.js",
+        "src/utils/finder.test.ts",
+        "src/utils/finder.ts",
+        "src/utils/properties.test.ts",
+        "src/utils/properties.ts",
+        "src/utils/property.test.ts",
+        "src/utils/property.ts",
+        "src/entry/panel/App.tsx",
+        "src/entry/panel/panel.tsx",
+        "src/entry/devtools/devtools.ts",
+        "src/entry/ext/background.ts",
+        "panel.html",
+        "public/icon.png"
+      ]
+    }
+  ],
+  "active": "Default"
+}

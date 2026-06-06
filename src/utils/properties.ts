@@ -1,11 +1,11 @@
-export const getConstructorProperties = (element) => element.constructor.elementProperties;
+export const getConstructorProperties = (element: any): any => 
+  (element.constructor as any).elementProperties;
 
-export const getCustomProperties = (element) => {
+export const getCustomProperties = (element: HTMLElement): string[] => {
   const elementProto = Object.getPrototypeOf(element);
-
   const htmlElementProto = HTMLElement.prototype;
 
-  let properties = [];
+  let properties: string[] = [];
   let currentProto = elementProto;
 
   while (currentProto && currentProto !== htmlElementProto) {
@@ -21,4 +21,4 @@ export const getCustomProperties = (element) => {
   }
 
   return properties;
-}
+};
