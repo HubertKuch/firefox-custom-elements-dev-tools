@@ -1,6 +1,6 @@
 import { JSX } from 'preact';
 import { useState } from 'preact/hooks';
-import { VirtualHtmlNode } from '../types/node';
+import { VirtualHtmlNode } from '@types/node';
 
 interface NodeRendererProps {
   node: VirtualHtmlNode;

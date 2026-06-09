@@ -1,6 +1,6 @@
 import { JSX } from 'preact';
-import { VirtualHtmlNode } from '../types/node';
-import { HtmlNodeRenderer } from './HtmlNodeRenderer';
+import { VirtualHtmlNode } from '@types/node';
+import { HtmlNodeRenderer } from '@components/HtmlNodeRenderer';
 
 interface TreeViewProps {
   data: VirtualHtmlNode | null;

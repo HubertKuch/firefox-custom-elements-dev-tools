@@ -22,7 +22,15 @@
     "noFallthroughCasesInSwitch": true,
 
     /* Typy dla Firefoksa */
-    "types": ["firefox-webext-browser"]
+    "types": ["firefox-webext-browser"],
+    "paths": {
+      "@src/*": ["src/*"],
+      "@shared/*": ["src/shared/*"],
+      "@utils/*": ["src/utils/*"],
+      "@hooks/*": ["src/shared/hooks/*"],
+      "@types/*": ["src/shared/types/*"],
+      "@components/*": ["src/shared/components/*"]
+    }
   },
   "include": ["src", "*.ts"]
 }
