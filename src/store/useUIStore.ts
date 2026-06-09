@@ -15,6 +15,8 @@ export interface UIState {
     setIsLoading: (isLoading: boolean) => void;
     error: string | null;
     setError: (error: string | null) => void;
+    sidebarWidth: number;
+    setSidebarWidth: (width: number) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -31,4 +33,6 @@ export const useUIStore = create<UIState>((set) => ({
   setIsLoading: (isLoading) => set({ isLoading }),
   error: null,
   setError: (error) => set({ error }),
+  sidebarWidth: 320,
+  setSidebarWidth: (width) => set({ sidebarWidth: width }),
 }));

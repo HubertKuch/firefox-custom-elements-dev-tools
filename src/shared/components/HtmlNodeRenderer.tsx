@@ -32,48 +32,57 @@ export const HtmlNodeRenderer = memo(({ node, depth = 0 }: NodeRendererProps): J
   }, [hasChildren]);
 
   return (
-    <div className="font-mono text-xs leading-relaxed select-none whitespace-nowrap w-fit min-w-full">
+    <div className="font-mono text-[11px] leading-tight select-none whitespace-nowrap w-fit min-w-full">
       {/* Node Tag Line */}
       <div 
         onClick={handleSelect}
-        className={`group flex items-center py-0.5 px-1.5 rounded-sm transition-colors duration-75 cursor-pointer
+        className={`group flex items-center py-0.5 px-1 transition-colors duration-0 cursor-default
           ${isSelected 
-            ? 'bg-blue-100 dark:bg-blue-900/30' 
-            : 'hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
-        style={{ paddingLeft: `${(depth * 16) + 6}px` }}
+            ? 'bg-[#dbeefd] dark:bg-[#333940] !text-black dark:!text-white' 
+            : 'hover:bg-[#f0f0f0] dark:hover:bg-[#35363a]'}`}
+        style={{ paddingLeft: `${(depth * 14) + 4}px` }}
       >
         {/* Minimalist expand triangle arrow */}
         {hasChildren ? (
           <svg 
             onClick={toggleOpen}
-            className={`w-3 h-3 text-gray-400 mr-1 hover:text-gray-600 dark:hover:text-gray-200 transition-transform duration-100 transform ${isOpen ? 'rotate-90' : ''}`} 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor" 
-            strokeWidth="2.5"
+            className={`w-2.5 h-2.5 text-gray-500 mr-0.5 transition-transform duration-75 transform ${isOpen ? 'rotate-90' : ''}`} 
+            fill="currentColor" 
+            viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            <path d="M8 5v14l11-7z" />
           </svg>
         ) : (
-          <div className="w-4" /> // Alignment spacer
+          <div className="w-3" /> // Alignment spacer
         )}
 
-        {/* Tag Name only */}
-        <span className="text-blue-600 dark:text-blue-400">
-          &lt;<span className="font-semibold">{tagLower}</span>&gt;
+        {/* Tag Name */}
+        <span className="text-[#881280] dark:text-[#5db0d7]">
+          &lt;<span className="">{tagLower}</span>
         </span>
+
+        {/* Attributes in tree view */}
+        {node.attributes && Object.entries(node.attributes).map(([key, value]) => (
+          <span key={key} className="ml-1.5">
+            <span className="text-[#994500] dark:text-[#9bbbdc]">{key}</span>
+            <span className="text-black dark:text-white">=</span>
+            <span className="text-[#1a1aa6] dark:text-[#f28b82]">"{value}"</span>
+          </span>
+        ))}
+
+        <span className="text-[#881280] dark:text-[#5db0d7]">&gt;</span>
 
         {/* Dynamic closing placeholder snippet when collapsed */}
         {!isOpen && hasChildren && (
-          <span className="text-gray-400 text-[11px] px-1 bg-gray-100 dark:bg-neutral-800 rounded mx-0.5 font-sans">
+          <span className="text-gray-500 text-[10px] px-0.5 mx-0.5 font-sans">
             ···
           </span>
         )}
 
         {/* Immediate Closing Tag for collapsed nodes or nodes without children */}
         {(!isOpen || !hasChildren) && (
-          <span className="text-blue-600 dark:text-blue-400">
-            &lt;/<span className="font-semibold">{tagLower}</span>&gt;
+          <span className="text-[#881280] dark:text-[#5db0d7]">
+            &lt;/<span className="">{tagLower}</span>&gt;
           </span>
         )}
       </div>
@@ -81,7 +90,7 @@ export const HtmlNodeRenderer = memo(({ node, depth = 0 }: NodeRendererProps): J
       {/* Children Node Scope block */}
       {hasChildren && isOpen && (
         <>
-          <div className="border-l border-gray-200/50 dark:border-neutral-800/70 ml-[13px]">
+          <div className="ml-[5px]">
             {node.children?.map((childNode, index) => (
               <HtmlNodeRenderer key={index} node={childNode} depth={depth + 1} />
             ))}
@@ -89,10 +98,10 @@ export const HtmlNodeRenderer = memo(({ node, depth = 0 }: NodeRendererProps): J
 
           {/* Dedicated Outro Closing Tag for structural clarity */}
           <div 
-            className="text-blue-600 dark:text-blue-400 py-0.5 px-1.5"
-            style={{ paddingLeft: `${(depth * 16) + 22}px` }}
+            className="text-[#881280] dark:text-[#5db0d7] py-0.5 px-1"
+            style={{ paddingLeft: `${(depth * 14) + 16}px` }}
           >
-            &lt;/<span className="font-semibold">{tagLower}</span>&gt;
+            &lt;/<span className="">{tagLower}</span>&gt;
           </div>
         </>
       )}
