@@ -11,7 +11,7 @@ interface UseDevToolsResult {
   client: DevToolsClient;
   currentElement: VirtualHtmlNode | null;
   setCurrentElement: (node: VirtualHtmlNode | null) => void;
-  elementProperties: string[] | null;
+  elementProperties: Record<string, string> | null;
 }
 
 export function useDevTools(): UseDevToolsResult {

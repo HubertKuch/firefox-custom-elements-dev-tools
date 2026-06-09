@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill';
-import { buildCustomElementTree, getElementPropertiesByPath } from '../../utils/finder';
+import { buildCustomElementTree, getElementPropertiesByPath, setElementAttributeByPath, setElementPropertyByPath } from '../../utils/finder';
 
 browser.runtime.onMessage.addListener((message: any) => {
   console.log('Message received in background:', message);
@@ -29,10 +29,38 @@ browser.runtime.onMessage.addListener((message: any) => {
       if (results && results[0]) {
           return results[0].result;
       }
-      return [];
+      return {};
     }).catch(error => {
       console.error('Property fetch failed in background:', error);
-      return [];
+      return {};
+    });
+  }
+
+  if (message.type === 'setAttribute') {
+    return browser.scripting.executeScript({
+      target: { tabId: message.tabId },
+      func: setElementAttributeByPath,
+      args: [message.path, message.name, message.value],
+      world: 'MAIN' as any
+    }).then(results => {
+      return results && results[0] ? results[0].result : false;
+    }).catch(error => {
+      console.error('Set attribute failed:', error);
+      return false;
+    });
+  }
+
+  if (message.type === 'setProperty') {
+    return browser.scripting.executeScript({
+      target: { tabId: message.tabId },
+      func: setElementPropertyByPath,
+      args: [message.path, message.name, message.value],
+      world: 'MAIN' as any
+    }).then(results => {
+      return results && results[0] ? results[0].result : false;
+    }).catch(error => {
+      console.error('Set property failed:', error);
+      return false;
     });
   }
 

@@ -7,8 +7,8 @@ export interface UIState {
     openSidebar: () => void;
     currentElement: VirtualHtmlNode | null;
     setCurrentElement: (node: VirtualHtmlNode | null) => void;
-    elementProperties: string[] | null;
-    setElementProperties: (properties: string[] | null) => void;
+    elementProperties: Record<string, string> | null;
+    setElementProperties: (properties: Record<string, string> | null) => void;
     rootNode: VirtualHtmlNode | null;
     setRootNode: (node: VirtualHtmlNode | null) => void;
     isLoading: boolean;

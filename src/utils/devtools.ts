@@ -2,7 +2,9 @@ import { VirtualHtmlNode } from '@types/node';
 
 export interface DevToolsClient {
   getCustomElements(): Promise<VirtualHtmlNode | null>;
-  inspectElement(node: VirtualHtmlNode): Promise<string[]>;
+  inspectElement(node: VirtualHtmlNode): Promise<Record<string, string>>;
+  setAttribute(node: VirtualHtmlNode, name: string, value: string): Promise<boolean>;
+  setProperty(node: VirtualHtmlNode, name: string, value: any): Promise<boolean>;
   isAvailable(): boolean;
 }
 
@@ -37,13 +39,13 @@ export class ExtensionDevToolsClient implements DevToolsClient {
     return null;
   }
 
-  async inspectElement(node: VirtualHtmlNode): Promise<string[]> {
+  async inspectElement(node: VirtualHtmlNode): Promise<Record<string, string>> {
       const browser = (await import('webextension-polyfill')).default;
       
       const tabId = browser.devtools?.inspectedWindow?.tabId;
       if (!tabId) {
           console.warn('No tab ID available for inspection');
-          return [];
+          return {};
       }
 
       const results = await browser.runtime.sendMessage({
@@ -52,7 +54,35 @@ export class ExtensionDevToolsClient implements DevToolsClient {
           path: node.path
       });
 
-      return results || [];
+      return results || {};
+  }
+
+  async setAttribute(node: VirtualHtmlNode, name: string, value: string): Promise<boolean> {
+      const browser = (await import('webextension-polyfill')).default;
+      const tabId = browser.devtools?.inspectedWindow?.tabId;
+      if (!tabId || !node.path) return false;
+
+      return await browser.runtime.sendMessage({
+          type: 'setAttribute',
+          tabId: tabId,
+          path: node.path,
+          name,
+          value
+      });
+  }
+
+  async setProperty(node: VirtualHtmlNode, name: string, value: any): Promise<boolean> {
+      const browser = (await import('webextension-polyfill')).default;
+      const tabId = browser.devtools?.inspectedWindow?.tabId;
+      if (!tabId || !node.path) return false;
+
+      return await browser.runtime.sendMessage({
+          type: 'setProperty',
+          tabId: tabId,
+          path: node.path,
+          name,
+          value
+      });
   }
 }
 
@@ -80,9 +110,27 @@ export class MockDevToolsClient implements DevToolsClient {
     } as VirtualHtmlNode;
   }
 
-  async inspectElement(_node: VirtualHtmlNode): Promise<string[]> {
+  async inspectElement(_node: VirtualHtmlNode): Promise<Record<string, string>> {
       await new Promise(resolve => setTimeout(resolve, 200));
-      return ['prop1', 'prop2', 'isActive', 'count', 'items', 'config'];
+      return {
+          'prop1': 'value1',
+          'prop2': '123',
+          'isActive': 'true',
+          'count': '42',
+          'items': '[object Array]',
+          'config': '[object Object]'
+      };
+  }
+
+  async setAttribute(node: VirtualHtmlNode, name: string, value: string): Promise<boolean> {
+      console.log(`[MOCK] Setting attribute ${name} to ${value} on ${node.tagName}`);
+      if (node.attributes) node.attributes[name] = value;
+      return true;
+  }
+
+  async setProperty(node: VirtualHtmlNode, name: string, _value: any): Promise<boolean> {
+      console.log(`[MOCK] Setting property ${name} on ${node.tagName}`);
+      return true;
   }
 }
 

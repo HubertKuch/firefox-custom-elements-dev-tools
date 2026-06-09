@@ -71,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
                         <div className="flex flex-col">
                             <SummarySection node={currentElement} />
                             <AttributesSection node={currentElement} />
-                            <PropertiesSection properties={elementProperties} />
+                            <PropertiesSection properties={elementProperties} node={currentElement} />
                         </div>
                     )}
                 </div>
