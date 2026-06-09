@@ -2,6 +2,7 @@ import { VirtualHtmlNode } from '@types/node';
 
 export interface DevToolsClient {
   getCustomElements(): Promise<VirtualHtmlNode | null>;
+  inspectElement(node: VirtualHtmlNode): Promise<string[]>;
   isAvailable(): boolean;
 }
 
@@ -35,6 +36,24 @@ export class ExtensionDevToolsClient implements DevToolsClient {
     
     return null;
   }
+
+  async inspectElement(node: VirtualHtmlNode): Promise<string[]> {
+      const browser = (await import('webextension-polyfill')).default;
+      
+      const tabId = browser.devtools?.inspectedWindow?.tabId;
+      if (!tabId) {
+          console.warn('No tab ID available for inspection');
+          return [];
+      }
+
+      const results = await browser.runtime.sendMessage({
+          type: 'getProperties',
+          tabId: tabId,
+          path: node.path
+      });
+
+      return results || [];
+  }
 }
 
 export class MockDevToolsClient implements DevToolsClient {
@@ -48,16 +67,22 @@ export class MockDevToolsClient implements DevToolsClient {
     
     return {
       tagName: 'MOCK-ROOT',
-      children: Array.from({ length: 50 }, (_, i) => ({
-        tagName: `ITEM-${i + 1}${i === 5 ? '-VERY-LONG-TAG-NAME-TO-TEST-HORIZONTAL-SCROLLING' : ''}`,
+      attributes: { id: 'app-root', class: 'container mx-auto' },
+      textContent: 'Welcome to the mock preview mode.',
+      children: Array.from({ length: 10 }, (_, i) => ({
+        tagName: `ITEM-${i + 1}`,
+        attributes: { role: 'listitem', 'data-index': String(i) },
         children: i % 3 === 0 ? [
-          { tagName: 'SUB-ITEM-A', children: [] },
-          { tagName: 'SUB-ITEM-B', children: [
-            { tagName: 'DEEP-ITEM', children: [] }
-          ]}
+          { tagName: 'SUB-ITEM-A', attributes: { class: 'active' }, children: [] },
+          { tagName: 'SUB-ITEM-B', textContent: 'Inner text here', children: [] }
         ] : []
       }))
     } as VirtualHtmlNode;
+  }
+
+  async inspectElement(_node: VirtualHtmlNode): Promise<string[]> {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      return ['prop1', 'prop2', 'isActive', 'count', 'items', 'config'];
   }
 }
 

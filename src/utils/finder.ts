@@ -8,47 +8,79 @@ export function buildCustomElementTree(): VirtualHtmlNode | null {
     return el.tagName.toLowerCase().includes('-');
   }
 
+  function getElementAttributes(el: Element): Record<string, string> {
+    const attrs: Record<string, string> = {};
+    if (el.attributes) {
+      for (let i = 0; i < el.attributes.length; i++) {
+        const attr = el.attributes[i];
+        attrs[attr.name] = attr.value;
+      }
+    }
+    return attrs;
+  }
+
+  function getElementPath(el: Element): number[] {
+    const path: number[] = [];
+    let current: Node | null = el;
+    while (current && current !== document) {
+      const parent = current.parentNode || (current instanceof ShadowRoot ? current.host : null);
+      if (parent) {
+        if (current instanceof ShadowRoot) {
+          path.unshift(-1); // Indicator for shadowRoot
+        } else {
+          const index = Array.prototype.indexOf.call(parent.childNodes, current);
+          path.unshift(index);
+        }
+        current = parent;
+      } else {
+        break;
+      }
+    }
+    return path;
+  }
+
   function mapElement(el: Element): VirtualHtmlNode {
     const children: VirtualHtmlNode[] = [];
     
-    function findNested(root: Element | ShadowRoot, acc: VirtualHtmlNode[]) {
+    function findNested(root: Element | ShadowRoot) {
+      if (!root.children) return;
       for (let i = 0; i < root.children.length; i++) {
         const child = root.children[i];
         if (isCustomElement(child)) {
-          acc.push(mapElement(child));
+          children.push(mapElement(child));
         } else {
-          findNested(child, acc);
+          findNested(child);
+          if (child.shadowRoot) {
+            findNested(child.shadowRoot);
+          }
         }
       }
-      if (root instanceof Element && root.shadowRoot) {
-        findNested(root.shadowRoot, acc);
-      }
     }
 
-    // Search for nested custom elements in light DOM
-    for (let i = 0; i < el.children.length; i++) {
-      const child = el.children[i];
-      if (isCustomElement(child)) {
-        children.push(mapElement(child));
-      } else {
-        findNested(child, children);
-      }
-    }
-
-    // Search in shadow DOM
-    if (el.shadowRoot) {
-      for (let i = 0; i < el.shadowRoot.children.length; i++) {
-        const child = el.shadowRoot.children[i];
+    // Search for nested custom elements
+    if (el.children) {
+      for (let i = 0; i < el.children.length; i++) {
+        const child = el.children[i];
         if (isCustomElement(child)) {
           children.push(mapElement(child));
         } else {
-          findNested(child, children);
+          findNested(child);
+          if (child.shadowRoot) {
+            findNested(child.shadowRoot);
+          }
         }
       }
+    }
+
+    if (el.shadowRoot) {
+      findNested(el.shadowRoot);
     }
 
     return {
       tagName: el.tagName.toLowerCase(),
+      attributes: getElementAttributes(el),
+      textContent: el.textContent?.trim().substring(0, 100),
+      path: getElementPath(el),
       children: children.length > 0 ? children : undefined
     };
   }
@@ -56,8 +88,12 @@ export function buildCustomElementTree(): VirtualHtmlNode | null {
   const results: VirtualHtmlNode[] = [];
   
   function walk(node: Element | Document | ShadowRoot) {
-    for (let i = 0; i < node.children.length; i++) {
-      const child = node.children[i];
+    if (!node) return;
+    const children = node.children;
+    if (!children) return;
+
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
       if (isCustomElement(child)) {
         results.push(mapElement(child));
       } else {
@@ -69,7 +105,7 @@ export function buildCustomElementTree(): VirtualHtmlNode | null {
     }
   }
 
-  walk(document.body);
+  walk(document.documentElement || document.body || document);
 
   if (results.length === 0) return null;
   if (results.length === 1) return results[0];
@@ -78,6 +114,50 @@ export function buildCustomElementTree(): VirtualHtmlNode | null {
     tagName: 'root',
     children: results
   };
+}
+
+export function getElementPropertiesByPath(path: number[]): string[] {
+  if (!path || path.length === 0) return [];
+  
+  let current: Node = document;
+  for (const index of path) {
+    if (index === -1) {
+      if (current instanceof Element && current.shadowRoot) {
+        current = current.shadowRoot;
+      } else {
+        return [];
+      }
+    } else {
+      if (current && current.childNodes && current.childNodes[index]) {
+        current = current.childNodes[index];
+      } else {
+        return [];
+      }
+    }
+  }
+
+  if (!(current instanceof HTMLElement)) return [];
+
+  const element = current;
+  const elementProto = Object.getPrototypeOf(element);
+  const htmlElementProto = HTMLElement.prototype;
+
+  const properties: string[] = [];
+  let currentProto = elementProto;
+
+  while (currentProto && currentProto !== htmlElementProto) {
+    const descriptors = Object.getOwnPropertyDescriptors(currentProto);
+
+    Object.keys(descriptors).forEach(key => {
+      if (key !== 'constructor' && !properties.includes(key)) {
+        properties.push(key);
+      }
+    });
+
+    currentProto = Object.getPrototypeOf(currentProto);
+  }
+
+  return properties;
 }
 
 /**

@@ -1,10 +1,28 @@
+import { useEffect } from 'preact/hooks';
 import { TreeView } from '@components/TreeView';
 import { useDevTools } from '@hooks/useDevTools';
 import Topbar from '@components/navigation/Topbar';
 import Sidebar from '@components/Sidebar';
 
 export default function App() {
-  const { rootNode, error, isLoading, client } = useDevTools();
+  const { rootNode, error, isLoading, client, refresh, currentElement, setElementProperties } = useDevTools();
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    if (currentElement) {
+      client.inspectElement(currentElement).then(props => {
+        setElementProperties(props);
+      }).catch(err => {
+        console.error("Failed to fetch properties", err);
+        setElementProperties([]);
+      });
+    } else {
+      setElementProperties(null);
+    }
+  }, [currentElement, client, setElementProperties]);
 
   return (
     <div className="h-full flex flex-col p-2 bg-white dark:bg-neutral-950 relative overflow-hidden">

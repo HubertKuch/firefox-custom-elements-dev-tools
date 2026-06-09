@@ -1,7 +1,7 @@
 import { JSX } from 'preact';
-import { useState } from 'preact/hooks';
+import { useState, useCallback } from 'preact/hooks';
+import { memo } from 'preact/compat';
 import { VirtualHtmlNode } from '@types/node';
-import { useDevTools } from '../hooks/useDevTools';
 import { useUIStore } from '@src/store/useUIStore';
 
 interface NodeRendererProps {
@@ -9,26 +9,27 @@ interface NodeRendererProps {
   depth?: number;
 }
 
-export const HtmlNodeRenderer = ({ node, depth = 0 }: NodeRendererProps): JSX.Element => {
+export const HtmlNodeRenderer = memo(({ node, depth = 0 }: NodeRendererProps): JSX.Element => {
   const hasChildren = !!(node.children && node.children.length > 0);
   const [isOpen, setIsOpen] = useState<boolean>(depth < 3);
-  const { currentElement, setCurrentElement } = useDevTools();
-  const openSidebar = useUIStore((state) => state.openSidebar);
-  const tagLower = node.tagName.toLowerCase();
   
-  const isSelected = currentElement === node;
+  const isSelected = useUIStore((state) => state.currentElement === node);
+  const setCurrentElement = useUIStore((state) => state.setCurrentElement);
+  const openSidebar = useUIStore((state) => state.openSidebar);
+  
+  const tagLower = node.tagName.toLowerCase();
 
-  const handleSelect = (e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
+  const handleSelect = useCallback((e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
     setCurrentElement(node);
     openSidebar();
-  };
+  }, [node, setCurrentElement, openSidebar]);
 
-  const toggleOpen = (e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
+  const toggleOpen = useCallback((e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
     if (!hasChildren) return;
     e.stopPropagation();
-    setIsOpen(!isOpen);
-  };
+    setIsOpen(open => !open);
+  }, [hasChildren]);
 
   return (
     <div className="font-mono text-xs leading-relaxed select-none whitespace-nowrap w-fit min-w-full">
@@ -97,4 +98,4 @@ export const HtmlNodeRenderer = ({ node, depth = 0 }: NodeRendererProps): JSX.El
       )}
     </div>
   );
-};
+});

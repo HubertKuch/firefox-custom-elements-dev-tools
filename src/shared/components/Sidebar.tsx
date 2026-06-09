@@ -1,5 +1,4 @@
 import React from "preact/compat";
-import { useDevTools } from "../hooks/useDevTools";
 import { useUIStore } from "@src/store/useUIStore";
 
 interface SidebarProps {} 
@@ -7,7 +6,8 @@ interface SidebarProps {}
 const Sidebar: React.FC<SidebarProps> = () => {
     const isOpen = useUIStore((state) => state.isSidebarOpen);
     const toggleSidebar = useUIStore((state) => state.toggleSidebar);
-    const { currentElement } = useDevTools();
+    const currentElement = useUIStore((state) => state.currentElement);
+    const elementProperties = useUIStore((state) => state.elementProperties);
 
     return (
         <div className={`absolute top-0 right-0 bottom-0 w-80 bg-white dark:bg-neutral-900 border-l border-gray-200 dark:border-neutral-800 transition-transform duration-200 transform z-50 shadow-xl ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
@@ -34,15 +34,49 @@ const Sidebar: React.FC<SidebarProps> = () => {
                             <p className="text-[10px] mt-1 opacity-60">to inspect its properties</p>
                         </div>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div>
-                                <h3 className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-1">Tag Name</h3>
-                                <div className="font-mono text-sm font-semibold text-gray-800 dark:text-neutral-200">
+                                <h3 className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-1.5 px-1">Tag Name</h3>
+                                <div className="font-mono text-xs font-semibold text-gray-800 dark:text-neutral-200 bg-gray-50 dark:bg-neutral-800/50 p-2 rounded border border-gray-100 dark:border-neutral-800">
                                     &lt;{currentElement.tagName.toLowerCase()}&gt;
                                 </div>
                             </div>
 
-                            {/* We can add more property inspection here later */}
+                            {currentElement.attributes && Object.keys(currentElement.attributes).length > 0 && (
+                                <div>
+                                    <h3 className="text-[10px] font-bold text-purple-500 uppercase tracking-widest mb-1.5 px-1">Attributes</h3>
+                                    <div className="space-y-1 bg-gray-50 dark:bg-neutral-800/50 p-2 rounded border border-gray-100 dark:border-neutral-800">
+                                        {Object.entries(currentElement.attributes).map(([key, value]) => (
+                                            <div key={key} className="flex justify-between items-baseline font-mono text-[11px]">
+                                                <span className="text-purple-600 dark:text-purple-400 font-medium">{key}</span>
+                                                <span className="text-gray-600 dark:text-neutral-400 truncate ml-2">"{value}"</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {elementProperties && elementProperties.length > 0 && (
+                                <div>
+                                    <h3 className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1.5 px-1">Custom Properties</h3>
+                                    <div className="flex flex-wrap gap-1 bg-gray-50 dark:bg-neutral-800/50 p-2 rounded border border-gray-100 dark:border-neutral-800">
+                                        {elementProperties.map(prop => (
+                                            <span key={prop} className="px-1.5 py-0.5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded text-[10px] font-mono text-gray-700 dark:text-neutral-300">
+                                                {prop}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentElement.textContent && (
+                                <div>
+                                    <h3 className="text-[10px] font-bold text-green-500 uppercase tracking-widest mb-1.5 px-1">Text Content</h3>
+                                    <div className="text-[11px] text-gray-600 dark:text-neutral-400 bg-gray-50 dark:bg-neutral-800/50 p-2 rounded border border-gray-100 dark:border-neutral-800 break-words line-clamp-4">
+                                        {currentElement.textContent}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

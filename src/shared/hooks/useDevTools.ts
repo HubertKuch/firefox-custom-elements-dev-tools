@@ -11,15 +11,21 @@ interface UseDevToolsResult {
   client: DevToolsClient;
   currentElement: VirtualHtmlNode | null;
   setCurrentElement: (node: VirtualHtmlNode | null) => void;
+  elementProperties: string[] | null;
 }
 
 export function useDevTools(): UseDevToolsResult {
-  const [rootNode, setRootNode] = useState<VirtualHtmlNode | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const rootNode = useUIStore((state) => state.rootNode);
+  const setRootNode = useUIStore((state) => state.setRootNode);
+  const error = useUIStore((state) => state.error);
+  const setError = useUIStore((state) => state.setError);
+  const isLoading = useUIStore((state) => state.isLoading);
+  const setIsLoading = useUIStore((state) => state.setIsLoading);
   
   const currentElement = useUIStore((state) => state.currentElement);
   const setCurrentElement = useUIStore((state) => state.setCurrentElement);
+  const elementProperties = useUIStore((state) => state.elementProperties);
+  const setElementProperties = useUIStore((state) => state.setElementProperties);
 
   const client = useMemo(() => getDevToolsClient(), []);
 
@@ -35,11 +41,7 @@ export function useDevTools(): UseDevToolsResult {
     } finally {
       setIsLoading(false);
     }
-  }, [client]);
+  }, [client, setIsLoading, setRootNode, setError]);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
-  return { rootNode, error, isLoading, refresh, client, currentElement, setCurrentElement };
+  return { rootNode, error, isLoading, refresh, client, currentElement, setCurrentElement, elementProperties };
 }
