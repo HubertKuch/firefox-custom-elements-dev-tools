@@ -1,11 +1,13 @@
 import { TreeView } from '@components/TreeView';
 import { useDevTools } from '@hooks/useDevTools';
+import Topbar from '@components/navigation/Topbar';
+import Sidebar from '@components/Sidebar';
 
 export default function App() {
   const { rootNode, error, isLoading, client } = useDevTools();
 
   return (
-    <div className="h-full flex flex-col p-2 bg-white dark:bg-neutral-950">
+    <div className="h-full flex flex-col p-2 bg-white dark:bg-neutral-950 relative overflow-hidden">
       {error && (
         <div className="shrink-0 text-xs text-red-500 mb-4 p-2 bg-red-50 border border-red-200 rounded">
           {error}
@@ -17,6 +19,7 @@ export default function App() {
           Preview Mode
         </div>
       )}
+      <Topbar />
 
       {isLoading ? (
         <div className="flex-1 flex items-center justify-center text-xs text-gray-400 italic">
@@ -29,6 +32,8 @@ export default function App() {
           No custom elements found on the page.
         </div>
       )}
+      
+      <Sidebar />
     </div>
   );
 }

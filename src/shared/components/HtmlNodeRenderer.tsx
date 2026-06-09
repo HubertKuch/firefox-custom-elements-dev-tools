@@ -1,6 +1,8 @@
 import { JSX } from 'preact';
 import { useState } from 'preact/hooks';
 import { VirtualHtmlNode } from '@types/node';
+import { useDevTools } from '../hooks/useDevTools';
+import { useUIStore } from '@src/store/useUIStore';
 
 interface NodeRendererProps {
   node: VirtualHtmlNode;
@@ -9,9 +11,18 @@ interface NodeRendererProps {
 
 export const HtmlNodeRenderer = ({ node, depth = 0 }: NodeRendererProps): JSX.Element => {
   const hasChildren = !!(node.children && node.children.length > 0);
-  const [isOpen, setIsOpen] = useState<boolean>(depth < 3); // Default open top layers
-  
+  const [isOpen, setIsOpen] = useState<boolean>(depth < 3);
+  const { currentElement, setCurrentElement } = useDevTools();
+  const openSidebar = useUIStore((state) => state.openSidebar);
   const tagLower = node.tagName.toLowerCase();
+  
+  const isSelected = currentElement === node;
+
+  const handleSelect = (e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setCurrentElement(node);
+    openSidebar();
+  };
 
   const toggleOpen = (e: JSX.TargetedMouseEvent<HTMLDivElement>) => {
     if (!hasChildren) return;
@@ -23,15 +34,18 @@ export const HtmlNodeRenderer = ({ node, depth = 0 }: NodeRendererProps): JSX.El
     <div className="font-mono text-xs leading-relaxed select-none whitespace-nowrap w-fit min-w-full">
       {/* Node Tag Line */}
       <div 
-        onClick={toggleOpen}
-        className={`group flex items-center py-0.5 px-1.5 rounded-sm transition-colors duration-75
-          ${hasChildren ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800' : ''}`}
+        onClick={handleSelect}
+        className={`group flex items-center py-0.5 px-1.5 rounded-sm transition-colors duration-75 cursor-pointer
+          ${isSelected 
+            ? 'bg-blue-100 dark:bg-blue-900/30' 
+            : 'hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
         style={{ paddingLeft: `${(depth * 16) + 6}px` }}
       >
         {/* Minimalist expand triangle arrow */}
         {hasChildren ? (
           <svg 
-            className={`w-3 h-3 text-gray-400 mr-1 transition-transform duration-100 transform ${isOpen ? 'rotate-90' : ''}`} 
+            onClick={toggleOpen}
+            className={`w-3 h-3 text-gray-400 mr-1 hover:text-gray-600 dark:hover:text-gray-200 transition-transform duration-100 transform ${isOpen ? 'rotate-90' : ''}`} 
             fill="none" 
             viewBox="0 0 24 24" 
             stroke="currentColor" 

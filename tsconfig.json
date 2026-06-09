@@ -22,6 +22,7 @@
     "noFallthroughCasesInSwitch": true,
 
     /* Typy dla Firefoksa */
+    "baseUrl": ".",
     "types": ["firefox-webext-browser"],
     "paths": {
       "@src/*": ["src/*"],
