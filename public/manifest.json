@@ -5,13 +5,18 @@
   "description": "Custom elements dev tools for firefox that do not break",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "tabs"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
   },
   "background": {
-    "scripts": ["assets/background.js"]
+    "scripts": ["assets/background.js"],
+    "type": "module"
   },
+  "host_permissions": [
+    "*://*/*"
+  ],
   "devtools_page": "devtools.html"
 }

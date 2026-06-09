@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import preact from '@preact/preset-vite';
+import tailwindcss from '@tailwindcss/vite';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -8,7 +9,10 @@ const __dirname = dirname(__filename);
 
 export default defineConfig({
   base: './',
-  plugins: [preact()],
+  plugins: [
+    preact(),
+    tailwindcss(),
+  ],
   build: {
     rollupOptions: {
       input: {
