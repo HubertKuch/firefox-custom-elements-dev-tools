@@ -20,7 +20,7 @@ export const HtmlNodeRenderer = ({ node, depth = 0 }: NodeRendererProps): JSX.El
   };
 
   return (
-    <div className="font-mono text-xs leading-relaxed select-none">
+    <div className="font-mono text-xs leading-relaxed select-none whitespace-nowrap w-fit min-w-full">
       {/* Node Tag Line */}
       <div 
         onClick={toggleOpen}
