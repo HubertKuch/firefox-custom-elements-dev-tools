@@ -12,6 +12,7 @@ interface UseDevToolsResult {
   currentElement: VirtualHtmlNode | null;
   setCurrentElement: (node: VirtualHtmlNode | null) => void;
   elementProperties: Record<string, string> | null;
+  setElementProperties: (properties: Record<string, string> | null) => void;
 }
 
 export function useDevTools(): UseDevToolsResult {
@@ -43,5 +44,15 @@ export function useDevTools(): UseDevToolsResult {
     }
   }, [client, setIsLoading, setRootNode, setError]);
 
-  return { rootNode, error, isLoading, refresh, client, currentElement, setCurrentElement, elementProperties };
+  return { 
+    rootNode, 
+    error, 
+    isLoading, 
+    refresh, 
+    client, 
+    currentElement, 
+    setCurrentElement, 
+    elementProperties,
+    setElementProperties 
+  };
 }

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Target Test Page</title>
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <test-container>
+    <div>
+      <custom-button role="button">Click me</custom-button>
+    </div>
+  </test-container>
+
+  <script>
+    // Define simple custom elements
+    class TestContainer extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' }).innerHTML = `
+          <shadow-card>
+            <slot></slot>
+          </shadow-card>
+        `;
+      }
+    }
+    class ShadowCard extends HTMLElement {}
+    class CustomButton extends HTMLElement {}
+
+    customElements.define('test-container', TestContainer);
+    customElements.define('shadow-card', ShadowCard);
+    customElements.define('custom-button', CustomButton);
+  </script>
+</body>
+</html>
