@@ -1,5 +1,12 @@
 import browser from 'webextension-polyfill';
-import { buildCustomElementTree, getElementPropertiesByPath, setElementAttributeByPath, setElementPropertyByPath } from '../../utils/finder';
+import { 
+  buildCustomElementTree, 
+  getElementPropertiesByPath, 
+  setElementAttributeByPath, 
+  setElementPropertyByPath,
+  highlightElementByPath,
+  clearElementHighlight
+} from '../../utils/finder';
 
 browser.runtime.onMessage.addListener((message: any) => {
   console.log('Message received in background:', message);
@@ -60,6 +67,33 @@ browser.runtime.onMessage.addListener((message: any) => {
       return results && results[0] ? results[0].result : false;
     }).catch(error => {
       console.error('Set property failed:', error);
+      return false;
+    });
+  }
+
+  if (message.type === 'highlightElement') {
+    return browser.scripting.executeScript({
+      target: { tabId: message.tabId },
+      func: highlightElementByPath,
+      args: [message.path],
+      world: 'MAIN' as any
+    }).then(results => {
+      return results && results[0] ? results[0].result : false;
+    }).catch(error => {
+      console.error('Highlight element failed:', error);
+      return false;
+    });
+  }
+
+  if (message.type === 'clearHighlight') {
+    return browser.scripting.executeScript({
+      target: { tabId: message.tabId },
+      func: clearElementHighlight,
+      world: 'MAIN' as any
+    }).then(results => {
+      return results && results[0] ? results[0].result : false;
+    }).catch(error => {
+      console.error('Clear highlight failed:', error);
       return false;
     });
   }

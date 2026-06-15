@@ -5,6 +5,8 @@ export interface DevToolsClient {
   inspectElement(node: VirtualHtmlNode): Promise<Record<string, string>>;
   setAttribute(node: VirtualHtmlNode, name: string, value: string): Promise<boolean>;
   setProperty(node: VirtualHtmlNode, name: string, value: any): Promise<boolean>;
+  highlightElement(node: VirtualHtmlNode): Promise<boolean>;
+  clearHighlight(): Promise<boolean>;
   isAvailable(): boolean;
 }
 
@@ -84,6 +86,29 @@ export class ExtensionDevToolsClient implements DevToolsClient {
           value
       });
   }
+
+  async highlightElement(node: VirtualHtmlNode): Promise<boolean> {
+      const browser = (await import('webextension-polyfill')).default;
+      const tabId = browser.devtools?.inspectedWindow?.tabId;
+      if (!tabId || !node.path) return false;
+
+      return await browser.runtime.sendMessage({
+          type: 'highlightElement',
+          tabId: tabId,
+          path: node.path
+      });
+  }
+
+  async clearHighlight(): Promise<boolean> {
+      const browser = (await import('webextension-polyfill')).default;
+      const tabId = browser.devtools?.inspectedWindow?.tabId;
+      if (!tabId) return false;
+
+      return await browser.runtime.sendMessage({
+          type: 'clearHighlight',
+          tabId: tabId
+      });
+  }
 }
 
 export class MockDevToolsClient implements DevToolsClient {
@@ -161,6 +186,16 @@ export class MockDevToolsClient implements DevToolsClient {
 
   async setProperty(node: VirtualHtmlNode, name: string, _value: any): Promise<boolean> {
       console.log(`[MOCK] Setting property ${name} on ${node.tagName}`);
+      return true;
+  }
+
+  async highlightElement(node: VirtualHtmlNode): Promise<boolean> {
+      console.log(`[MOCK] Highlighting element ${node.tagName} with path ${node.path?.join(',')}`);
+      return true;
+  }
+
+  async clearHighlight(): Promise<boolean> {
+      console.log(`[MOCK] Clearing highlight`);
       return true;
   }
 

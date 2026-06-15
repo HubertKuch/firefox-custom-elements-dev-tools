@@ -3,6 +3,7 @@ import { useState, useCallback } from 'preact/hooks';
 import { memo } from 'preact/compat';
 import { VirtualHtmlNode } from '@types/node';
 import { useUIStore } from '@src/store/useUIStore';
+import { useDevTools } from '@hooks/useDevTools';
 
 interface NodeRendererProps {
   node: VirtualHtmlNode;
@@ -16,6 +17,7 @@ export const HtmlNodeRenderer = memo(({ node, depth = 0 }: NodeRendererProps): J
   const isSelected = useUIStore((state) => state.currentElement === node);
   const setCurrentElement = useUIStore((state) => state.setCurrentElement);
   const openSidebar = useUIStore((state) => state.openSidebar);
+  const { client } = useDevTools();
   
   const tagLower = node.tagName.toLowerCase();
 
@@ -31,11 +33,21 @@ export const HtmlNodeRenderer = memo(({ node, depth = 0 }: NodeRendererProps): J
     setIsOpen(open => !open);
   }, [hasChildren]);
 
+  const handleMouseEnter = useCallback(() => {
+    client.highlightElement(node);
+  }, [node, client]);
+
+  const handleMouseLeave = useCallback(() => {
+    client.clearHighlight();
+  }, [client]);
+
   return (
     <div className="font-mono text-[11px] leading-tight select-none whitespace-nowrap w-fit min-w-full">
       {/* Node Tag Line */}
       <div 
         onClick={handleSelect}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         className={`group flex items-center py-0.5 px-1 transition-colors duration-0 cursor-default
           ${isSelected 
             ? 'bg-[#dbeefd] dark:bg-[#333940] !text-black dark:!text-white' 
