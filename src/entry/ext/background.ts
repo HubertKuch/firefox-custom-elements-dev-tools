@@ -8,10 +8,10 @@ import {
   clearElementHighlight
 } from '../../utils/dom';
 
-browser.runtime.onMessage.addListener((message: any) => {
-  console.log('Message received in background:', message);
-  
-  if (message.type === 'executeScript') {
+type MessageHandler = (message: any) => Promise<any>;
+
+const messageHandlers: Record<string, MessageHandler> = {
+  executeScript: (message) => {
     return browser.scripting.executeScript({
       target: { tabId: message.tabId },
       func: buildCustomElementTree,
@@ -23,14 +23,14 @@ browser.runtime.onMessage.addListener((message: any) => {
       console.error('Script execution failed in background:', error);
       throw error;
     });
-  }
+  },
 
-  if (message.type === 'getProperties') {
+  getProperties: (message) => {
     return browser.scripting.executeScript({
       target: { tabId: message.tabId },
       func: getElementPropertiesByPath,
       args: [message.path],
-      world: 'MAIN' as any // Access page-side JS
+      world: 'MAIN' as any
     }).then(results => {
       console.log('Script results (properties):', results);
       if (results && results[0]) {
@@ -41,9 +41,9 @@ browser.runtime.onMessage.addListener((message: any) => {
       console.error('Property fetch failed in background:', error);
       return {};
     });
-  }
+  },
 
-  if (message.type === 'setAttribute') {
+  setAttribute: (message) => {
     return browser.scripting.executeScript({
       target: { tabId: message.tabId },
       func: setElementAttributeByPath,
@@ -55,9 +55,9 @@ browser.runtime.onMessage.addListener((message: any) => {
       console.error('Set attribute failed:', error);
       return false;
     });
-  }
+  },
 
-  if (message.type === 'setProperty') {
+  setProperty: (message) => {
     return browser.scripting.executeScript({
       target: { tabId: message.tabId },
       func: setElementPropertyByPath,
@@ -69,9 +69,9 @@ browser.runtime.onMessage.addListener((message: any) => {
       console.error('Set property failed:', error);
       return false;
     });
-  }
+  },
 
-  if (message.type === 'highlightElement') {
+  highlightElement: (message) => {
     return browser.scripting.executeScript({
       target: { tabId: message.tabId },
       func: highlightElementByPath,
@@ -83,9 +83,9 @@ browser.runtime.onMessage.addListener((message: any) => {
       console.error('Highlight element failed:', error);
       return false;
     });
-  }
+  },
 
-  if (message.type === 'clearHighlight') {
+  clearHighlight: (message) => {
     return browser.scripting.executeScript({
       target: { tabId: message.tabId },
       func: clearElementHighlight,
@@ -96,6 +96,15 @@ browser.runtime.onMessage.addListener((message: any) => {
       console.error('Clear highlight failed:', error);
       return false;
     });
+  }
+};
+
+browser.runtime.onMessage.addListener((message: any) => {
+  console.log('Message received in background:', message);
+  
+  const handler = messageHandlers[message.type];
+  if (handler) {
+    return handler(message);
   }
 
   return Promise.resolve({ status: "received" });
