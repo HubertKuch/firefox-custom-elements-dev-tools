@@ -87,15 +87,15 @@ export class ExtensionDevToolsClient implements DevToolsClient {
 }
 
 export class MockDevToolsClient implements DevToolsClient {
+  private mockTree: VirtualHtmlNode | null = null;
+
   isAvailable(): boolean {
     return false; // Specifically return false to indicate it's a mock
   }
 
-  async getCustomElements(): Promise<VirtualHtmlNode | null> {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return {
+  private initMockTree() {
+    if (this.mockTree) return;
+    const tree = {
       tagName: 'MOCK-ROOT',
       attributes: { id: 'app-root', class: 'container mx-auto' },
       textContent: 'Welcome to the mock preview mode.',
@@ -108,6 +108,26 @@ export class MockDevToolsClient implements DevToolsClient {
         ] : []
       }))
     } as VirtualHtmlNode;
+
+    const assignPaths = (node: VirtualHtmlNode, currentPath: number[]) => {
+      node.path = currentPath;
+      if (node.children) {
+        node.children.forEach((child, index) => {
+          assignPaths(child, [...currentPath, index]);
+        });
+      }
+    };
+    assignPaths(tree, [0]);
+    this.mockTree = tree;
+  }
+
+  async getCustomElements(): Promise<VirtualHtmlNode | null> {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    this.initMockTree();
+    
+    // Return a deep clone of the tree so that mutations are clean
+    return JSON.parse(JSON.stringify(this.mockTree));
   }
 
   async inspectElement(_node: VirtualHtmlNode): Promise<Record<string, string>> {
@@ -124,13 +144,41 @@ export class MockDevToolsClient implements DevToolsClient {
 
   async setAttribute(node: VirtualHtmlNode, name: string, value: string): Promise<boolean> {
       console.log(`[MOCK] Setting attribute ${name} to ${value} on ${node.tagName}`);
-      if (node.attributes) node.attributes[name] = value;
-      return true;
+      this.initMockTree();
+      
+      if (node.path && this.mockTree) {
+        const target = this.findNodeInMockTree(this.mockTree, node.path);
+        if (target) {
+          if (!target.attributes) {
+            target.attributes = {};
+          }
+          target.attributes[name] = value;
+          return true;
+        }
+      }
+      return false;
   }
 
   async setProperty(node: VirtualHtmlNode, name: string, _value: any): Promise<boolean> {
       console.log(`[MOCK] Setting property ${name} on ${node.tagName}`);
       return true;
+  }
+
+  private findNodeInMockTree(root: VirtualHtmlNode, path: number[]): VirtualHtmlNode | null {
+    const pathsEqual = (a: number[] | undefined, b: number[] | undefined) => {
+      if (!a || !b) return false;
+      if (a.length !== b.length) return false;
+      return a.every((val, idx) => val === b[idx]);
+    };
+
+    if (pathsEqual(root.path, path)) return root;
+    if (root.children) {
+      for (const child of root.children) {
+        const found = this.findNodeInMockTree(child, path);
+        if (found) return found;
+      }
+    }
+    return null;
   }
 }
 
