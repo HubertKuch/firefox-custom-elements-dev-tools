@@ -6,7 +6,7 @@ import {
   setElementPropertyByPath,
   highlightElementByPath,
   clearElementHighlight
-} from '../../utils/finder';
+} from '../../utils/dom';
 
 browser.runtime.onMessage.addListener((message: any) => {
   console.log('Message received in background:', message);

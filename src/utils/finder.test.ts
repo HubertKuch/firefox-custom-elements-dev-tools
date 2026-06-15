@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { findCustomElements } from './finder';
+import { findCustomElements } from './dom';
 
 describe('findCustomElements', () => {
   beforeEach(() => {
